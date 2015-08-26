@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<!--2015.1.7-->
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="format-detection" content="telephone=no" />
+<meta http-equiv="Access-Control-Allow-Origin" content="*">
+<meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width" />
+<link rel="stylesheet" href="../css/base.css">
+<script src="http://libs.baidu.com/jquery/2.1.1/jquery.min.js"></script>
+<title>h5调用原生能力demo</title>
+<style type="text/css">
+.info2 h2,.info2 h3{ width: 50%; float: left; text-align: left;}
+body {
+font: 14px/21px "Helvetica Neue", Helvetica, Arial, sans-serif;
+background: #f1f1f1;
+color: #43474c;
+padding-left: 10px; padding-right: 10px;
+}
+</style>
+</head>
+<body>
+<br><br>
+
+1.h5唤醒客户端：(外部h5页面才唤醒 代码请查看源代码中的注释)<br><br>
+<!--
+说明：通过h5点击按钮换醒app，如果app没有安装，那么直接跳转到相应的APP下载页面
+兼容性：在手机各大浏览器(360浏览器 uc浏览器 搜狗浏览器 QQ浏览器 百度浏览器 QQ客户端)能唤醒。微信 新浪微博客户端 腾讯微博客户端无法唤醒。
+
+<a href="javascript:;" id="zjmobliestart">点击唤醒浙江移动手机营业厅</a><br><br>-->
+
+2.通讯录（单条信息） （ios/安卓）
+<input type="button" value="点击调用单条通讯录" class="contact_single" /><br>
+<p class="info1"></p>
+<br>
+
+<!--通讯录（所有联系人的信息）
+<input type="button" value="点击调用所有通讯录" class="contact_all" /><br>
+<ul class="info2">
+</ul>
+<br>-->
+
+3.短信分享（系统自带的形式） （ios/安卓） <input type="button" value="短信分享" class="message_share" /> <br><br>
+  3.1 短信分享（弹出框的形式）（安卓） <input type="button" value="安卓点我短信分享" class="message_share_and" /> <br><br>
+
+4.微信分享（ios/安卓） <input type="button" value="微信分享" class="weixin_share" /> <br><br>
+
+5.朋友圈 （ios/安卓）<input type="button" value="朋友圈" class="friends_share" /> <br><br>
+
+6.具体业务跳转：<br>
+ <a href="javascript:;" onclick="window.stub.jsMethod('com.businesshall.activity.OrderActivity','1','marketid&8010020140611001');"  >跳转到4G飞享套餐 (安卓)</a><br><br>
+
+7.其他页面跳转（ios/安卓）：<br>
+<a href="javascript:;" class="gotonative" v_ios="RechargeViewController" v_and="window.stub.jsMethod('com.businesshall.activity.PaymentActivity','1','');">跳转到充值页面</a><br><br>
+
+<a href="javascript:;" class="gotonative" v_ios="FNRootViewController" v_and="window.stub.jsMethod('com.businesshall.activity.FamilyNetworkActivity','1','');">跳转到亲情网</a><br><br>
+
+<a href="javascript:;" class="gotonative_FlowMain" v_ios="FlowMainController" v_and="window.stub.jsMethod('com.chinamobile.flow.activity.FlowMainActivity','1','');">跳转到流量专区</a><br><br>
+
+<script type="text/javascript">
+$('.contact_single').click(function(){ 
+	if(is_android()){ 
+		window.stub.jsMethod('contactlist','5','');
+	}
+	if(is_iphone()){ 
+		getcontactinfo_ios();
+	}
+})
+$('.contact_all').click(function(){ 
+	if(is_android()){ 
+		window.stub.showcontacts();
+	}
+	if(is_iphone()){ 
+		getcontactinfoall_ios();
+	}
+})
+$('.message_share').click(function(){ 
+	if(is_android()){ // message1 为安卓系统自带的发短信功能 message2 为对话框形式
+		window.stub.jsMethod('com.zjmobile.app.message1','4','我的短信内容我的短信内容我的短信内容我的短信内容我的短信内容我的短信 链接 http://www.baidu.com ');
+	}
+	if(is_iphone()){ 
+		message_ios_share();
+	}
+})
+$('.message_share_and').click(function(){ 
+	window.stub.jsMethod('com.zjmobile.app.message2','4','我的短信内容我的短信内容我的短信内容我的短信内容我的短信内容我的短信 链接 http://www.baidu.com ');
+})
+$('.weixin_share').click(function(){ 
+	if(is_android()){ 
+		window.stub.jsMethod('com.zjmobile.app.weixin','4','我的标题&http://app.m.zj.chinamobile.com/zjweb/images/downpage_icon4.png&我是内容我是内容我是内容我是内容我是内容&http://www.hssmwd.com/uploads/weixin2.html');
+	}
+	if(is_iphone()){ 
+		weixin_ios_share();
+	}
+})
+$('.friends_share').click(function(){ 
+	if(is_android()){ 
+		window.stub.jsMethod('com.zjmobile.app.friends','4','我的标题&http://app.m.zj.chinamobile.com/zjweb/images/downpage_icon4.png&我是内容我是内容我是内容我是内容我是内容&http://www.hssmwd.com/uploads/weixin2.html');
+	}
+	if(is_iphone()){ 
+		friends_ios_share();
+	}
+})
+//跳转到对应页面(ios)
+$('.gotonative').click(function(){
+	if(is_android()){ 
+		var gotonative_and = eval($(this).attr('v_and'));
+		gotonative_and;
+	}
+	if(is_iphone()){ 
+		var v = $(this).attr('v_ios');
+		gotonative_ios(v);
+	}
+})
+//跳转到对应页面(ios) 流量专区单独
+$('.gotonative_FlowMain').click(function(){
+	if(is_android()){ 
+		var gotonative_and = eval($(this).attr('v_and'));
+		gotonative_and;
+	}
+	if(is_iphone()){ 
+		var v = $(this).attr('v_ios');
+		gotonative_ios_FlowMain(v);
+	}
+})
+
+//获取单个联系人（ios）
+function getcontactinfo_ios(){  
+	var json ='{"function":"showAddressBook:","argument":"","callback":"getcontactinfo"}';
+    webPostnotification(json);
+}
+//获取所有联系人（ios）
+function getcontactinfoall_ios(){        
+	var json ='{"function":"getAllPeoplesAddressInfo:","argument":"","callback":"getcontactinfoall"}';
+    webPostnotification(json);
+}
+//短信分享(ios)
+function message_ios_share(){       
+	var json ='{"function":"displaySMSComposerSheetWithPhone:","argument":"我是短信的测试内容","callback":""}';
+    webPostnotification(json);	
+}
+//微信好友的分享(ios)
+function weixin_ios_share(){       
+	var json ='{"function":"showWXFriendsView:","argument":"微信好友的标题&http://app.m.zj.chinamobile.com/zjweb/images/downpage_icon4.png&我是内容我是内容我是内容我是内容我是内容&http://www.hssmwd.com/uploads/weixin2.html","callback":""}';
+    webPostnotification(json);	
+}
+//微信朋友圈的分享(ios)
+function friends_ios_share(){       
+	var json ='{"function":"showWXFriendCircleView:","argument":"微信朋友圈的标题&http://app.m.zj.chinamobile.com/zjweb/images/downpage_icon4.png&我是内容我是内容我是内容我是内容我是内容&http://www.hssmwd.com/uploads/weixin2.html","callback":""}';
+    webPostnotification(json);	
+}
+//页面跳转（ios）
+function gotonative_ios(url){        
+	var json ='{"function":"pushToMainStoryBoardFunctionalModuleVC:","argument":"'+url+'","callback":""}';
+    webPostnotification(json);
+}
+function gotonative_ios_FlowMain(url){//流量专区     
+	var json ='{"function":"pushToFlowStoryBoardFunctionalModuleVC:","argument":"'+url+'","callback":""}';
+    webPostnotification(json);
+}
+function webPostnotification(func){
+    document.location ="webkitpostnotification:"+func;
+}
+
+//获取单个联系人（安卓/ios）
+function getcontactinfo(info){//{"numlist":["13858264243"],"name":"xxx1"}
+	var jsonobjs = eval('(' + info + ')');
+	var singlehtml = '';
+	if(jsonobjs.numlist.length > 0){
+		for(var i=0; i<jsonobjs.numlist.length; i++){
+			singlehtml += jsonobjs.numlist[i] + '<br>';
+		}
+			$('.info1').html(jsonobjs.name+'<br>'+singlehtml);
+	}
+}
+//获取所有联系人（安卓/ios）
+function getcontactinfoall(info){//[{"numlist":["13858264243"],"name":"xxx2"},{"numlist":["13858264243","13858264244"],"name":"xxx3"}]
+    var jsonobjs = eval(info);
+    var allhtml = '';
+    var allhtml_num = '';
+    for(var i=0;i<jsonobjs.length;i++){
+    	for(var y=0;y<jsonobjs[i].numlist.length;y++){ 
+    		allhtml_num = jsonobjs[i].numlist[y].replace(/-/g,'')+'&nbsp;';
+    		allhtml += '<li><h2>'+jsonobjs[i].name+'</h2><h3>'+allhtml_num+'</h3>';
+    	}
+		$('.info2').html(allhtml);
+    }
+}
+//唤醒app
+function applink(){
+    	window.location = 'zjmobile://platformapi/startapp';   
+    	if(is_android()){
+	        var clickedAt = +new Date;  
+	         setTimeout(function(){
+	             !window.document.webkitHidden && setTimeout(function(){ 
+	                   if (+new Date - clickedAt < 2000){  
+	                       window.location = 'http://app.m.zj.chinamobile.com/zjweb/';  
+	                   }  
+	             }, 500);       
+	         }, 500) 
+         } 
+    	if(is_iphone()){
+	        var clickedAt = +new Date;  
+	         setTimeout(function(){
+	             !window.document.webkitHidden && setTimeout(function(){ 
+	                   if (+new Date - clickedAt < 2000){  
+	                       window.location = 'https://itunes.apple.com/us/app/zhe-jiang-yi-dong-shou-ji/id898243566';  
+	                   }  
+	             }, 500);       
+	         }, 500) 
+         } 
+    	if(is_wp()){
+	        var clickedAt = +new Date;  
+	         setTimeout(function(){
+	             !window.document.webkitHidden && setTimeout(function(){ 
+	                   if (+new Date - clickedAt < 2000){  
+	                       window.location = 'http://www.windowsphone.com/s?appid=c472daf1-0568-4b44-9abd-ead3073d257a';  
+	                   }  
+	             }, 500);       
+	         }, 500) 
+         }  
+     
+}
+function is_android(){
+    var ua = navigator.userAgent.toLowerCase();
+    if(ua.match(/android/i)=="android") {
+        return true;
+     } else {
+        return false;
+    }
+}
+function is_iphone(){
+    var ua = navigator.userAgent.toLowerCase();
+    if(ua.match(/iphone/i)=="iphone") {
+        return true;
+     } else {
+        return false;
+    }
+}
+function is_wp(){
+    var ua = navigator.userAgent.toLowerCase();
+    if(ua.match(/iemobile/i)=="iemobile") {
+        return true;
+     } else {
+        return false;
+    }
+}
+function is_qq(){//qq客户端 
+    var ua = navigator.userAgent.toLowerCase();
+    if(ua.match(/qq\//i)=="qq/") {
+        return true;
+     } else {
+        return false;
+    }
+}
+$('#zjmobliestart').click(function(){ 
+	applink(); 
+})
+</script>
+</body>
+</html>
